@@ -1,7 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, responses
 
 app = FastAPI()
 
 @app.get('/')
-def hello():
-    return 'Hello world!'
+async def docs():
+    return responses.RedirectResponse('/docs')
