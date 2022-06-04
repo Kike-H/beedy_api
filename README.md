@@ -58,7 +58,7 @@ PASSWORDDB=your-password
 DATABASE=beedyDB
 ```
 
-7. Create a Database and named __beedy__
+7. Create a Database and named __beedyDB__
 
 ## How Run?
 
