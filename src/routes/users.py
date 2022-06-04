@@ -1,4 +1,3 @@
-from cmath import e
 from uuid import uuid4
 from fastapi import APIRouter
 from src.models.user import User
