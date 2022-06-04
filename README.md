@@ -62,14 +62,9 @@ DATABASE=beedyDB
 
 ## How Run?
 
-1. Go to src
+1. Execute 
 ```bash
-cd src
-```
-
-2. Execute 
-```bash
-uvicorn app:app --reload
+uvicorn src.app:app --reload
 ```
 
 ## Contributing

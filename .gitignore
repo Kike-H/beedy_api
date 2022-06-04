@@ -7,8 +7,6 @@ __pycache__/
 .vscode
 files
 
-# Configure 
-/src/config/*.py
 
 # C extensions
 *.so
