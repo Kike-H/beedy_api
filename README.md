@@ -51,6 +51,15 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+6. Make a .env file with creditals for mysql
+```
+USERDB=your-name-user
+PASSWORDDB=your-password
+DATABASE=beedyDB
+```
+
+7. Create a Database and named __beedy__
+
 ## How Run?
 
 1. Go to src
