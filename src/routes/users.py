@@ -16,6 +16,6 @@ def create_user(user:User):
     try:
         conn.execute(users.insert().values(user.asdict()))
     except:
-        raise TypeError({"Error":'This is user alredy exits', "status_code":500})
+        raise TypeError({"Error":'This user alredy exits', "status_code":500})
     return user
 
