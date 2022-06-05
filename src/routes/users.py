@@ -1,5 +1,5 @@
-import email
 from uuid import uuid4
+from types import NoneType
 from fastapi import APIRouter
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -24,8 +24,9 @@ def create_user(user:User):
 def login_user(email:str, password:str):
     '''This path return a user if the credentials are correct'''
     user = conn.execute(users.select().where(users.c.email==email)).first()
-    if(check_password_hash(password)):
+    print(type(user))
+    if(type(user) != NoneType and check_password_hash(user.password, password)):
         return user
-    #raise TypeError({"Error":'The creditals are wrong', "status_code":500})
+    raise TypeError({"Error":'The creditals are wrong', "status_code":500})
 
 
