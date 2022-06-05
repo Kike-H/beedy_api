@@ -6,7 +6,7 @@ class FileData(BaseModel):
     '''
     This class rerpsent a folder with the next values:
 
-    - id 
+    - id (Optional) 
     - name
     - folder
     - password (Optional)
@@ -14,9 +14,9 @@ class FileData(BaseModel):
 
     '''
 
-    id: str
+    id: Optional[str]
     name: str
-    folder: str
+    folder: Optional[str]
     password: Optional[str]
     path: Optional[str]
 
@@ -25,7 +25,7 @@ class FileData(BaseModel):
         This method generate a path of the file with the atributes
         * before_path is optional 
         '''
-        self.path = before_path+self.id+'-'+self.folder+'/'+self.name
+        self.path = before_path+self.id+'/'+self.folder+'/'+self.name
 
     def asdict(self) -> dict:
         '''This method return the user object like a dictionary'''

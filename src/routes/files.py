@@ -1,7 +1,7 @@
+from os import getcwd, makedirs, path, rename, remove, scandir
 from werkzeug.security import check_password_hash
-from os import getcwd, makedirs, path, rename, remove
-from types import NoneType
 from fastapi import APIRouter, File, UploadFile
+from types import NoneType
 from shutil import rmtree
 
 from src.models.files import FileData
@@ -15,7 +15,7 @@ ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
 @files.post('/files/create-new/folder', response_model=Folder, tags=['Folder'])
 def create_new_folder(folder: Folder):
-    uri = ROOT_DIR+'/'+folder.id+'-'+folder.name+'/'
+    uri = ROOT_DIR+'/'+folder.id+'/'+folder.name+'/'
     try:
         makedirs(uri)
         folder.path = uri
@@ -23,9 +23,14 @@ def create_new_folder(folder: Folder):
     except:
         raise TypeError({"details":'this path already exists', "status_code": 400})
 
+@files.get('/files/get/folder//{uri:path}', response_model=list[FileData], tags=['Folder'])
+def get_all_folder(uri:str):
+    d = separateUri(uri)
+    return [FileData(id=d[0], folder=d[1], name=f.name, path= path.abspath(f.path)) for f in scandir(uri) if f.is_file()]
+
 @files.put('/files/update/folder/{new_name}', response_model=Folder, tags=['Folder'])
 def update_folder(new_name:str, folder: Folder):
-    new_uri = ROOT_DIR+'/'+folder.id+'-'+new_name+'/'
+    new_uri = ROOT_DIR+'/'+folder.id+'/'+new_name+'/'
     rename(folder.path, new_uri)
     folder.name = new_name
     folder.path = new_uri
@@ -48,3 +53,7 @@ async def create_new_file(id:str, folder:str ,file: UploadFile = File(...)):
         file_saved.write(content)
         file_saved.close()
     return file_data
+
+
+def separateUri(uri:str) -> list:
+    return ([var for var in uri.split('/') if var][-2:])

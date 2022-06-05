@@ -8,7 +8,7 @@ class Folder(BaseModel):
     - id 
     - name
     - password (Optional)
-    - path (Optional) 
+    - path (Optional)
 
     '''
     id: str
