@@ -24,7 +24,6 @@ def create_user(user:User):
 def login_user(email:str, password:str):
     '''This path return a user if the credentials are correct'''
     user = conn.execute(users.select().where(users.c.email==email)).first()
-    print(type(user))
     if(type(user) != NoneType and check_password_hash(user.password, password)):
         return user
     raise TypeError({"Error":'The creditals are wrong', "status_code":500})
