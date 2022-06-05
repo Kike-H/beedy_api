@@ -8,7 +8,6 @@ files = APIRouter()
 ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
 @files.post('/files/create-new/folder', response_model=Folder)
-# TODO: finish this rote
 def create_new_folder(folder: Folder):
     uri = ROOT_DIR+'/'+folder.id+'-'+folder.name+'/'
     try:
