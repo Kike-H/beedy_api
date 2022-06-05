@@ -1,5 +1,5 @@
 from fastapi import APIRouter, File, UploadFile
-from os import getcwd, makedirs, path, remove
+from os import getcwd, makedirs, path, rename, remove
 
 from src.models.files import FileData
 from src.models.folder import Folder
@@ -8,7 +8,7 @@ files = APIRouter()
 
 ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
-@files.post('/files/create-new/folder', response_model=Folder, tags=['Files'])
+@files.post('/files/create-new/folder', response_model=Folder, tags=['Files', 'Folder'])
 def create_new_folder(folder: Folder):
     uri = ROOT_DIR+'/'+folder.id+'-'+folder.name+'/'
     try:
@@ -17,6 +17,15 @@ def create_new_folder(folder: Folder):
         return folder
     except:
         raise TypeError({"details":'this path already exists', "status_code": 400})
+
+@files.put('/files/update/folder/{new_name}', response_model=Folder, tags=['Files', 'Folder'])
+def update_folder(new_name:str, folder: Folder):
+    new_uri = ROOT_DIR+'/'+folder.id+'-'+new_name+'/'
+    rename(folder.path, new_uri)
+    folder.name = new_name
+    folder.path = new_uri
+    return folder
+
 
 @files.post('/files/create-new/file-{id}-{folder}', response_model=FileData, tags=['Files'])
 async def create_new_file(id:str, folder:str ,file: UploadFile = File(...)):
