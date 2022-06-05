@@ -54,6 +54,5 @@ async def create_new_file(id:str, folder:str ,file: UploadFile = File(...)):
         file_saved.close()
     return file_data
 
-
 def separateUri(uri:str) -> list:
     return ([var for var in uri.split('/') if var][-2:])
