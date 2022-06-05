@@ -2,7 +2,6 @@ from uuid import uuid4
 from fastapi import APIRouter
 from werkzeug.security import generate_password_hash
 
-from src.models.error import ErrorServer
 from src.models.user import User
 from src.config.database import conn
 from src.schemas.users import users
