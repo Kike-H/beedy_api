@@ -1,8 +1,20 @@
 from fastapi import APIRouter
+from os import getcwd, makedirs, path, remove
+
+from src.models.folder import Folder
 
 files = APIRouter()
 
-@files.post('/files/create-new/{folder}')
-def create_new_folder(folder:str):
-    return (folder)
+ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
+
+@files.post('/files/create-new/folder', response_model=Folder)
+# TODO: finish this rote
+def create_new_folder(folder: Folder):
+    uri = ROOT_DIR+'/'+folder.id+'-'+folder.name+'/'
+    try:
+        makedirs(uri)
+        folder.path = uri
+        return folder
+    except:
+        raise TypeError({"details":'this path already exists', "status_code": 400})
 
