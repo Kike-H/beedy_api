@@ -26,7 +26,6 @@ def update_folder(new_name:str, folder: Folder):
     folder.path = new_uri
     return folder
 
-
 @files.post('/files/create-new/file-{id}-{folder}', response_model=FileData, tags=['Files'])
 async def create_new_file(id:str, folder:str ,file: UploadFile = File(...)):
     # TODO: terminated
