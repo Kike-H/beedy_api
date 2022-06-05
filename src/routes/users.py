@@ -9,7 +9,7 @@ from src.config.database import conn
 
 users_routes = APIRouter()
 
-@users_routes.post('/users/register', response_model=User)
+@users_routes.post('/users/register', response_model=User, tags=['Users'])
 def create_user(user:User):
     '''This method saves a new user in to the database'''
     user.id = str(uuid4())
@@ -20,7 +20,7 @@ def create_user(user:User):
         raise TypeError({"Error":'This user alredy exits', "status_code":500})
     return user
 
-@users_routes.get('/users/{email}/{password}', response_model=User)
+@users_routes.get('/users/{email}/{password}', response_model=User, tags=['Users'])
 def login_user(email:str, password:str):
     '''This path return a user if the credentials are correct'''
     user = conn.execute(users.select().where(users.c.email==email)).first()
