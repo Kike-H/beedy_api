@@ -6,4 +6,4 @@ async def catch_exception_middleware(request: Request, call_next):
     try:
         return await call_next(request)
     except Exception as e:
-        return Response(content=json.dumps(e.args), status_code=e.args[0]['status_code'], media_type="application/json")
+        return Response(content=json.dumps(e.args), status_code=e.args[0]['status_code'] if 'status_code' in e.args[0] else 500, media_type="application/json")

@@ -1,6 +1,7 @@
+import email
 from uuid import uuid4
 from fastapi import APIRouter
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from src.models.user import User
 from src.schemas.users import users
@@ -18,4 +19,13 @@ def create_user(user:User):
     except:
         raise TypeError({"Error":'This user alredy exits', "status_code":500})
     return user
+
+@users_routes.get('/users/{email}/{password}', response_model=User)
+def login_user(email:str, password:str):
+    '''This path return a user if the credentials are correct'''
+    user = conn.execute(users.select().where(users.c.email==email)).first()
+    if(check_password_hash(password)):
+        return user
+    #raise TypeError({"Error":'The creditals are wrong', "status_code":500})
+
 
