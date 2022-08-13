@@ -7,7 +7,6 @@ app = FastAPI(
 )
 
 app.include_router(users_routes)
-app.include_router(files)
 
 app.middleware('http')(catch_exception_middleware)
 
