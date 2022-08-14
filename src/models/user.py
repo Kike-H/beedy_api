@@ -35,6 +35,6 @@ class UserSaved(BaseModel):
     status_code: int
     message = "New user registered"
 
-class LoginUser(BaseModel):
+class UserLogin(BaseModel):
     email: str
     password: str
