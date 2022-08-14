@@ -10,7 +10,7 @@ app = FastAPI(
     version="0.0.1"
 )
 
-app.include_router(users_routes)
+app.include_router(users_routes, prefix='/users')
 
 app.middleware('http')(resolve)
 

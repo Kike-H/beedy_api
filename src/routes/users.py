@@ -9,7 +9,7 @@ from src.config.database import conn
 
 users_routes = APIRouter()
 
-@users_routes.post('/users/register', response_model= UserSaved , tags=['Users'], status_code=201)
+@users_routes.post('/register', response_model= UserSaved , tags=['Users'], status_code=201)
 def create_user(newUser:UserRegister):
     '''This method saves a new user in to the database'''
     newUser.id = str(uuid4())
@@ -20,7 +20,7 @@ def create_user(newUser:UserRegister):
         raise HTTPException(500, 'This user already exists')
     return UserSaved(id=newUser.id, status="OK", status_code=200)
 
-@users_routes.post('/users/login', response_model=User, tags=['Users'], status_code=202)
+@users_routes.post('/login', response_model=User, tags=['Users'], status_code=202)
 def login_user(userCredentials: UserLogin):
     '''This path return a user if the credentials are correct'''
     user = conn.execute(users.select().where(users.c.email==userCredentials.email)).first()
