@@ -1,3 +1,4 @@
+from pyexpat import model
 from typing import Optional
 from pydantic import BaseModel
 from src.schemas.users import userRole
@@ -26,3 +27,9 @@ class User(BaseModel):
             "password": self.password,
             "role": self.role
         }
+
+class UserRegister(BaseModel):
+    id:str
+    status: str
+    status_code: int
+    message = "New user registered"
