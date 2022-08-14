@@ -1,4 +1,3 @@
-from pyexpat import model
 from typing import Optional
 from pydantic import BaseModel
 from src.schemas.users import userRole
@@ -9,14 +8,16 @@ class User(BaseModel):
     - id (Optional)
     - name 
     - email
-    - password
 
     '''
     id: Optional[str]
     name: str
     email: str
-    password: str
     role: userRole
+
+class UserRegister(User):
+    '''This class represents a new user to save '''
+    password: str
 
     def asdict(self) -> dict:
         '''This method return the user object like a dictionary'''
@@ -28,8 +29,12 @@ class User(BaseModel):
             "role": self.role
         }
 
-class UserRegister(BaseModel):
-    id:str
+class UserSaved(BaseModel):
+    id: str
     status: str
     status_code: int
     message = "New user registered"
+
+class LoginUser(BaseModel):
+    email: str
+    password: str

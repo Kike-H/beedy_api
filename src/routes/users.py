@@ -3,14 +3,14 @@ from types import NoneType
 from fastapi import APIRouter, HTTPException
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from src.models.user import User, UserRegister
+from src.models.user import User, UserRegister, UserSaved
 from src.schemas.users import users
 from src.config.database import conn
 
 users_routes = APIRouter()
 
-@users_routes.post('/users/register', response_model= UserRegister , tags=['Users'])
-def create_user(user:User):
+@users_routes.post('/users/register', response_model= UserSaved , tags=['Users'])
+def create_user(user:UserRegister):
     '''This method saves a new user in to the database'''
     user.id = str(uuid4())
     user.password = generate_password_hash(user.password)
@@ -18,7 +18,7 @@ def create_user(user:User):
         conn.execute(users.insert().values(user.asdict()))
     except:
         raise HTTPException(500, 'This user already exists')
-    return UserRegister(id=user.id, status="OK", status_code=200)
+    return UserSaved(id=user.id, status="OK", status_code=200)
 
 @users_routes.get('/users/{email}/{password}', response_model=User, tags=['Users'])
 def login_user(email:str, password:str):
