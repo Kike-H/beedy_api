@@ -11,6 +11,7 @@ app = FastAPI(
 )
 
 app.include_router(users_routes, prefix='/users')
+app.include_router(courses_routes, prefix='/courses')
 
 app.middleware('http')(resolve)
 
