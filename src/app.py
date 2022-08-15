@@ -14,7 +14,7 @@ app.include_router(courses_routes, prefix='/courses')
 
 app.middleware('http')(resolve)
 
-@app.get('/')
+@app.get('/', tags=['Docs'])
 async def docs():
     ''' 
     Redirect to the documentation of Beedy API
