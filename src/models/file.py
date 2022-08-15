@@ -11,10 +11,12 @@ class FileIn(FileBase):
     ''' This class represents the paramenters of new file '''
     idUser: str
     nameCourse: str
+    idCourse: str
 
     def asdict(self) -> dict:
         return {
             "idUser":self.idUser,
+            "idCourse":self.idCourse,
             "nameCourse":self.nameCourse,
             "name":self.name,
             "path":self.path

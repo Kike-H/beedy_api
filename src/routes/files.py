@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, UploadFile, File, Header
 from os import path, getcwd, remove, rename
 from starlette.status import HTTP_204_NO_CONTENT
-from fastapi.responses import Response, StreamingResponse
-from sqlalchemy.orm import Session
+from fastapi.responses import Response
 from types import NoneType
 from typing import List
 
@@ -27,16 +26,15 @@ async def upload_file(id_course:str, file_in: UploadFile = File(...)):
             content = await file_in.read()
             save_file.write(content)
             save_file.close()
-        new_id = conn.execute(files.insert().values(FileIn(name=file_in.filename, path=uri, idUser=course.idUser, nameCourse=course.name).asdict())).lastrowid
+        new_id = conn.execute(files.insert().values(FileIn(name=file_in.filename, path=uri, idUser=course.idUser, nameCourse=course.name, idCourse=course.id).asdict())).lastrowid
         return FileOut(id=new_id, name=file_in.filename, path=uri)
     except Exception as e:
         raise HTTPException(500, str(e))
 
-# TODO: refactor 
-@files_routes.get('/get/course/{name}', response_model=List[FileOut], tags=['Files'], status_code=200)
-def get_file_by_name_course(name:str):
+@files_routes.get('/get/course/{id}', response_model=List[FileOut], tags=['Files'], status_code=200)
+def get_file_by_id_course(id:str):
     '''This route  get all the files of a course'''
-    response_files = conn.execute(files.select().where(files.c.nameCourse==name)).all()
+    response_files = conn.execute(files.select().where(files.c.idCourse==id)).all()
     if(len(response_files) == 0):
         raise HTTPException(404, 'Not Found')
     return response_files
