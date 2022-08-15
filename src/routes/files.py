@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, UploadFile, File, Header
 from os import path, getcwd, remove, rename
 from starlette.status import HTTP_204_NO_CONTENT
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
 from types import NoneType
 from typing import List
@@ -45,12 +45,11 @@ def get_streaming_file(id:str, range: str = Header(None)):
     '''This route get a streaming file'''
     start, end = range.replace("bytes=", "").split("-")
     start = int(start)
-    end = int(start + PORTION_SIZE)
+    end = int(end) if end else int(start + PORTION_SIZE)
     file = conn.execute(files.select().where(files.c.id==id)).first()
-
     with open(file.path, 'rb') as video:
         video.seek(start)
-        data = video.read(end - start)
+        data = video.read(start + end)
         size_video = str(path.getsize(file.path))
 
         headers = {
