@@ -14,7 +14,7 @@ courses_routes = APIRouter()
 
 ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
-@courses_routes.post('/add', response_model=CourseOut, tags=['courses'], status_code=201)
+@courses_routes.post('/add', response_model=CourseOut, tags=['Courses'], status_code=201)
 def add_new_course(course_in: CourseIn):
     '''This route add a new course'''
     uri = ROOT_DIR + '/' + course_in.idUser + '/' + course_in.name
@@ -26,7 +26,7 @@ def add_new_course(course_in: CourseIn):
     except Exception as e:
         raise HTTPException(500, str(e))
 
-@courses_routes.get('/get/{id}', response_model=List[CourseOut], tags=['courses'], status_code=200)
+@courses_routes.get('/get/{id}', response_model=List[CourseOut], tags=['Courses'], status_code=200)
 def get_courses_by_user(id:str):
     '''This route  get all the courses of a user'''
     response_courses = conn.execute(courses.select().where(courses.c.idUser==id)).all()
@@ -34,7 +34,7 @@ def get_courses_by_user(id:str):
         raise HTTPException(404, 'Not Found')
     return response_courses
 
-@courses_routes.get('/get', response_model=List[CourseOut], tags=['courses'], status_code=200)
+@courses_routes.get('/get', response_model=List[CourseOut], tags=['Courses'], status_code=200)
 def get_courses_by_name(name: str = ""):
     '''This route  get all the courses by name'''
     search = "%{}%".format(name)
@@ -45,7 +45,7 @@ def get_courses_by_name(name: str = ""):
         raise HTTPException(404, 'Not Found')
     return response_courses
 
-@courses_routes.get('get/last', response_model=List[CourseOut], tags=['courses'], status_code=200)
+@courses_routes.get('get/last', response_model=List[CourseOut], tags=['Courses'], status_code=200)
 def get_courses_by_date():
     '''This route  get the last 5 courses'''
     with Session(engine) as s:
@@ -53,7 +53,7 @@ def get_courses_by_date():
         s.close()
     return response_courses
 
-@courses_routes.put('get/update', response_model=CourseOut, tags=['courses'], status_code=200)
+@courses_routes.put('get/update', response_model=CourseOut, tags=['Courses'], status_code=200)
 def update_course(course_in: CourseIn):
     '''This route update a course by id'''
     uri = ROOT_DIR + '/' + course_in.idUser + '/' + course_in.name
@@ -67,12 +67,11 @@ def update_course(course_in: CourseIn):
     except Exception as e:
         raise HTTPException(404, str(e))
 
-@courses_routes.delete('delete/{id}', tags=['courses'], status_code=204)
+@courses_routes.delete('delete/{id}', tags=['Courses'], status_code=204)
 def delete_course(id:str):
     '''This route delete a course by id'''
     try:
         course = conn.execute(courses.select().where(courses.c.id==id)).first()
-        print(course)
         rmdir(course.path)
         conn.execute(courses.delete().where(courses.c.id==id))
         return Response(status_code=HTTP_204_NO_CONTENT)
