@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from src.schemas.users import userRole
-class User(BaseModel):
+class UserBase(BaseModel):
     '''
     This class rerpsent a user with the next values:
 
@@ -15,7 +15,7 @@ class User(BaseModel):
     email: str
     role: userRole
 
-class UserRegister(User):
+class UserIn(UserBase):
     '''This class represents a new user to save '''
     password: str
 
@@ -29,7 +29,7 @@ class UserRegister(User):
             "role": self.role
         }
 
-class UserSaved(BaseModel):
+class UserOut(BaseModel):
     id: str
     status: str
     status_code: int
@@ -38,3 +38,4 @@ class UserSaved(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+    token: Optional[str]
