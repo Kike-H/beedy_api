@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, UploadFile, File
-from os import makedirs, path, getcwd, rename, rmdir
+from os import path, getcwd, remove, rename
 from starlette.status import HTTP_204_NO_CONTENT
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 from types import NoneType
 from typing import List
 
@@ -63,14 +62,13 @@ def update_file(course_in: FileIn):
     # except Exception as e:
     #     raise HTTPException(404, str(e))
 
-# TODO: make this route 
 @files_routes.delete('/delete/{id}', tags=['Files'], status_code=204)
 def delete_file(id:str):
     '''This route delete a file by id'''
-    # try:
-    #     course = conn.execute(courses.select().where(courses.c.id==id)).first()
-    #     rmdir(course.path)
-    #     conn.execute(courses.delete().where(courses.c.id==id))
-    #     return Response(status_code=HTTP_204_NO_CONTENT)
-    # except Exception as e:
-    #     raise HTTPException(404, str(e))
+    try:
+        file = conn.execute(files.select().where(files.c.id==id)).first()
+        remove(file.path)
+        conn.execute(files.delete().where(files.c.id==id))
+        return Response(status_code=HTTP_204_NO_CONTENT)
+    except Exception as e:
+        raise HTTPException(404, str(e))
