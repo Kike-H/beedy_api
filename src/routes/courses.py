@@ -67,7 +67,7 @@ def update_course(course_in: CourseIn):
     except Exception as e:
         raise HTTPException(404, str(e))
 
-@courses_routes.delete('delete/{id}', tags=['Courses'], status_code=204)
+@courses_routes.delete('/delete/{id}', tags=['Courses'], status_code=204)
 def delete_course(id:str):
     '''This route delete a course by id'''
     try:
