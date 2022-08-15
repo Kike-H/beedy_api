@@ -8,7 +8,7 @@ from typing import List
 from src.models.file import FileIn, FileOut
 from src.schemas.file import files
 from src.schemas.courses import courses
-from src.config.database import conn, engine
+from src.config.database import conn
 
 files_routes = APIRouter()
 
@@ -26,7 +26,7 @@ async def upload_file(id_course:str, file_in: UploadFile = File(...)):
             content = await file_in.read()
             save_file.write(content)
             save_file.close()
-        new_id = conn.execute(files.insert().values(FileIn(name=file_in.filename, path=uri, idUser=course.idUser, nameCourse=course.name, idCourse=course.id).asdict())).lastrowid
+        new_id = conn.execute(files.insert().values(FileIn(name=file_in.filename, idUser=course.idUser, idCourse=course.id).asdict())).lastrowid
         return FileOut(id=new_id, name=file_in.filename, path=uri)
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -45,11 +45,15 @@ def get_streaming_file(id:str, range: str = Header(None)):
     start, end = range.replace("bytes=", "").split("-")
     start = int(start)
     end = int(end) if end else int(start + PORTION_SIZE)
+
     file = conn.execute(files.select().where(files.c.id==id)).first()
-    with open(file.path, 'rb') as video:
+    course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
+    uri = course.path + '/' +file.name
+    print(uri)
+    with open(uri, 'rb') as video:
         video.seek(start)
         data = video.read(start + end)
-        size_video = str(path.getsize(file.path))
+        size_video = str(path.getsize(uri))
 
         headers = {
             "Content-Range": f'bytes {str(start)}-{str(end)}/{size_video}',
@@ -65,16 +69,18 @@ def get_streaming_file(id:str, range: str = Header(None)):
 @files_routes.put('/get/update/{id}/name', response_model=FileOut, tags=['Files'], status_code=200)
 def update_file(id: str, name:str =""):
     '''This route update the video name'''
-    file_old = conn.execute(files.select().where(files.c.id==id)).first()
-    uri = ROOT_DIR + '/' + file_old.idUser + '/' + file_old.nameCourse + '/' + name
-    if(type(file_old) == NoneType):
+    file = conn.execute(files.select().where(files.c.id==id)).first()
+    course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
+    uri_old = course.path + '/' + file.name
+    uri_new = course.path + '/' + name
+    if(type(file) == NoneType):
         raise HTTPException(404, 'Course not found')
     if(name == ""):
         raise HTTPException(404, 'No new file name')
     try:
-        rename(file_old.path, uri)
-        conn.execute(files.update().values(name=name, path=uri).where(files.c.id==id))
-        return FileOut(id=file_old.id, name=name, path=uri)
+        rename(uri_old, uri_new)
+        conn.execute(files.update().values(name=name).where(files.c.id==id))
+        return FileOut(id=file.id, name=name)
     except Exception as e:
         raise HTTPException(404, str(e))
 
@@ -83,7 +89,9 @@ def delete_file(id:str):
     '''This route delete a file by id'''
     try:
         file = conn.execute(files.select().where(files.c.id==id)).first()
-        remove(file.path)
+        course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
+        uri = course.path + '/' + file.name
+        remove(uri)
         conn.execute(files.delete().where(files.c.id==id))
         return Response(status_code=HTTP_204_NO_CONTENT)
     except Exception as e:

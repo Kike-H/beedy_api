@@ -13,9 +13,7 @@ files = Table(
     Column('id', Integer, primary_key=True),
     Column('idUser', String(255), nullable=False),
     Column('idCourse', String(255), nullable=False),
-    Column('nameCourse', String(255), nullable=False),
     Column('name', String(255), nullable=False),
-    Column('path', String(255), nullable=False),
     Column('creationDate', DateTime, default=datetime.datetime.utcnow)
 )
 
