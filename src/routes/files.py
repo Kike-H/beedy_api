@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Response, UploadFile, File
+from fastapi import APIRouter, HTTPException, Response, UploadFile, File, Header
 from os import path, getcwd, remove, rename
 from starlette.status import HTTP_204_NO_CONTENT
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from types import NoneType
 from typing import List
@@ -12,6 +13,8 @@ from src.config.database import conn, engine
 files_routes = APIRouter()
 
 ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
+
+PORTION_SIZE = 1024 * 1024
 
 @files_routes.post('/upload/namecourse/{name_course}/idUser/{id_user}', response_model=FileOut, tags=['Files'], status_code=201)
 async def upload_file(name_course:str, id_user:str, file_in: UploadFile = File(...)):
@@ -35,17 +38,29 @@ def get_file_by_name_course(name:str):
         raise HTTPException(404, 'Not Found')
     return response_files
 
-# TODO: make this route 
-@files_routes.get('/get', response_model=FileOut, tags=['Files'], status_code=200)
-def get_streaming_file(id: str = ""):
+@files_routes.get('/get/{id}', tags=['Files'], status_code=200)
+def get_streaming_file(id:str, range: str = Header(None)):
     '''This route get a streaming file'''
-    # search = "%{}%".format(name)
-    # with Session(engine) as s:
-    #     response_courses = s.query(courses).filter(courses.c.name.like(search)).all()
-    #     s.close()
-    # if(len(response_courses) == 0):
-    #     raise HTTPException(404, 'Not Found')
-    # return response_courses
+    start, end = range.replace("bytes=", "").split("-")
+    start = int(start)
+    end = int(start + PORTION_SIZE)
+    file = conn.execute(files.select().where(files.c.id==id)).first()
+
+    with open(file.path, 'rb') as video:
+        video.seek(start)
+        data = video.read(end - start)
+        size_video = str(path.getsize(file.path))
+
+        headers = {
+            "Content-Range": f'bytes {str(start)}-{str(end)}/{size_video}',
+            "Accept-Ranges": "bytes"
+        }
+        return Response(
+            content=data,
+            status_code=206,
+            headers=headers,
+            media_type="video/mp4"
+        )
 
 # TODO: make this route 
 @files_routes.put('/get/update', response_model=FileOut, tags=['Files'], status_code=200)
