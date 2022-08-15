@@ -45,8 +45,7 @@ def get_courses_by_name(name: str = ""):
         raise HTTPException(404, 'Not Found')
     return response_courses
 
-# ! Fix this route
-@courses_routes.get('/get/last', response_model=List[CourseOut], tags=['Courses'], status_code=200)
+@courses_routes.get('/get/last/', response_model=List[CourseOut], tags=['Courses'], status_code=200)
 def get_courses_by_date():
     '''This route  get the last 5 courses'''
     with Session(engine) as s:
@@ -54,18 +53,17 @@ def get_courses_by_date():
         s.close()
     return response_courses
 
-# ! Fix this route
-@courses_routes.put('/get/update', response_model=CourseOut, tags=['Courses'], status_code=200)
-def update_course(course_in: CourseIn):
+@courses_routes.put('/get/update/{id}', response_model=CourseOut, tags=['Courses'], status_code=200)
+def update_course(id:str, name: str = ""):
     '''This route update a course by id'''
-    uri = ROOT_DIR + '/' + course_in.idUser + '/' + course_in.name
-    course_old = conn.execute(courses.select().where(courses.c.id==course_in.id)).first()
+    course_old = conn.execute(courses.select().where(courses.c.id==id)).first()
+    uri = ROOT_DIR + '/' + course_old.idUser + '/' + name
     if(type(course_old) == NoneType):
         raise HTTPException(404, 'Course not found')
     try:
         rename(course_old.path, uri)
-        conn.execute(courses.update().values(name=course_in.name, path=uri).where(courses.c.id==course_in.id))
-        return CourseOut(id=course_old.id, name=course_in.name, path=uri)
+        conn.execute(courses.update().values(name=name, path=uri).where(courses.c.id==id))
+        return CourseOut(id=course_old.id, name=name, path=uri)
     except Exception as e:
         raise HTTPException(404, str(e))
 
