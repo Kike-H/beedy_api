@@ -28,14 +28,13 @@ async def upload_file(name_course:str, id_user:str, file_in: UploadFile = File(.
     except Exception as e:
         raise HTTPException(500, str(e))
 
-# TODO: make this route 
 @files_routes.get('/get/course/{name}', response_model=List[FileOut], tags=['Files'], status_code=200)
 def get_file_by_name_course(name:str):
-     '''This route  get all the files of a course'''
-    # response_courses = conn.execute(courses.select().where(courses.c.idUser==id)).all()
-    # if(len(response_courses) == 0):
-    #     raise HTTPException(404, 'Not Found')
-    # return response_courses
+    '''This route  get all the files of a course'''
+    response_files = conn.execute(files.select().where(files.c.nameCourse==name)).all()
+    if(len(response_files) == 0):
+        raise HTTPException(404, 'Not Found')
+    return response_files
 
 # TODO: make this route 
 @files_routes.get('/get', response_model=FileOut, tags=['Files'], status_code=200)
