@@ -45,7 +45,7 @@ def get_courses_by_name(name: str = ""):
         raise HTTPException(404, 'Not Found')
     return response_courses
 
-@courses_routes.get('get/last', response_model=List[CourseOut], tags=['Courses'], status_code=200)
+@courses_routes.get('/get/last', response_model=List[CourseOut], tags=['Courses'], status_code=200)
 def get_courses_by_date():
     '''This route  get the last 5 courses'''
     with Session(engine) as s:
@@ -53,7 +53,7 @@ def get_courses_by_date():
         s.close()
     return response_courses
 
-@courses_routes.put('get/update', response_model=CourseOut, tags=['Courses'], status_code=200)
+@courses_routes.put('/get/update', response_model=CourseOut, tags=['Courses'], status_code=200)
 def update_course(course_in: CourseIn):
     '''This route update a course by id'''
     uri = ROOT_DIR + '/' + course_in.idUser + '/' + course_in.name
