@@ -1,7 +1,7 @@
-from unicodedata import name
-from fastapi import APIRouter, HTTPException
-from os import makedirs, path, getcwd, rename
+from fastapi import APIRouter, HTTPException, Response
+from os import makedirs, path, getcwd, rename, rmdir
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 from sqlalchemy import desc
 from types import NoneType
 from typing import List
@@ -60,7 +60,21 @@ def update_course(course_in: CourseIn):
     course_old = conn.execute(courses.select().where(courses.c.id==course_in.id)).first()
     if(type(course_old) == NoneType):
         raise HTTPException(404, 'Course not found')
-    rename(course_old.path, uri)
-    conn.execute(courses.update().values(name=course_in.name, path=uri).where(courses.c.id==course_in.id))
-    return CourseOut(id=course_old.id, name=course_in.name, path=uri)
+    try:
+        rename(course_old.path, uri)
+        conn.execute(courses.update().values(name=course_in.name, path=uri).where(courses.c.id==course_in.id))
+        return CourseOut(id=course_old.id, name=course_in.name, path=uri)
+    except Exception as e:
+        raise HTTPException(404, str(e))
 
+@courses_routes.delete('delete/{id}', tags=['courses'], status_code=204)
+def delete_course(id:str):
+    '''This route delete a course by id'''
+    try:
+        course = conn.execute(courses.select().where(courses.c.id==id)).first()
+        print(course)
+        rmdir(course.path)
+        conn.execute(courses.delete().where(courses.c.id==id))
+        return Response(status_code=HTTP_204_NO_CONTENT)
+    except Exception as e:
+        raise HTTPException(404, str(e))
