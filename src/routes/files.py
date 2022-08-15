@@ -8,6 +8,7 @@ from typing import List
 
 from src.models.file import FileIn, FileOut
 from src.schemas.file import files
+from src.schemas.courses import courses
 from src.config.database import conn, engine
 
 files_routes = APIRouter()
@@ -16,16 +17,17 @@ ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
 PORTION_SIZE = 1024 * 1024
 
-@files_routes.post('/upload/namecourse/{name_course}/idUser/{id_user}', response_model=FileOut, tags=['Files'], status_code=201)
-async def upload_file(name_course:str, id_user:str, file_in: UploadFile = File(...)):
+@files_routes.post('/upload/namecourse/{idCourse}', response_model=FileOut, tags=['Files'], status_code=201)
+async def upload_file(id_course:str, file_in: UploadFile = File(...)):
     '''This route add a new file to a course'''
-    uri = ROOT_DIR + '/' + id_user + '/' + name_course + '/' + file_in.filename
+    course = conn.execute(courses.select().where(courses.c.id==id_course)).first()
+    uri = course.path + '/' + file_in.filename
     try:
         with open (uri, 'wb') as save_file:
             content = await file_in.read()
             save_file.write(content)
             save_file.close()
-        new_id = conn.execute(files.insert().values(FileIn(name=file_in.filename, path=uri, idUser=id_user, nameCourse=name_course).asdict())).lastrowid
+        new_id = conn.execute(files.insert().values(FileIn(name=file_in.filename, path=uri, idUser=course.idUser, nameCourse=course.name).asdict())).lastrowid
         return FileOut(id=new_id, name=file_in.filename, path=uri)
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -38,7 +40,7 @@ def get_file_by_name_course(name:str):
         raise HTTPException(404, 'Not Found')
     return response_files
 
-@files_routes.get('/get/{id}', tags=['Files'], status_code=200)
+@files_routes.get('/get/streaming/video/{id}', tags=['Files'], status_code=200)
 def get_streaming_file(id:str, range: str = Header(None)):
     '''This route get a streaming file'''
     start, end = range.replace("bytes=", "").split("-")
