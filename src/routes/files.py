@@ -32,6 +32,7 @@ async def upload_file(id_course:str, file_in: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(500, str(e))
 
+# TODO: refactor 
 @files_routes.get('/get/course/{name}', response_model=List[FileOut], tags=['Files'], status_code=200)
 def get_file_by_name_course(name:str):
     '''This route  get all the files of a course'''
@@ -63,20 +64,21 @@ def get_streaming_file(id:str, range: str = Header(None)):
             media_type="video/mp4"
         )
 
-# TODO: make this route 
-@files_routes.put('/get/update', response_model=FileOut, tags=['Files'], status_code=200)
-def update_file(course_in: FileIn):
-    '''This route update a file by id'''
-    # uri = ROOT_DIR + '/' + course_in.idUser + '/' + course_in.name
-    # course_old = conn.execute(courses.select().where(courses.c.id==course_in.id)).first()
-    # if(type(course_old) == NoneType):
-    #     raise HTTPException(404, 'Course not found')
-    # try:
-    #     rename(course_old.path, uri)
-    #     conn.execute(courses.update().values(name=course_in.name, path=uri).where(courses.c.id==course_in.id))
-    #     return CourseOut(id=course_old.id, name=course_in.name, path=uri)
-    # except Exception as e:
-    #     raise HTTPException(404, str(e))
+@files_routes.put('/get/update/{id}/name', response_model=FileOut, tags=['Files'], status_code=200)
+def update_file(id: str, name:str =""):
+    '''This route update the video name'''
+    file_old = conn.execute(files.select().where(files.c.id==id)).first()
+    uri = ROOT_DIR + '/' + file_old.idUser + '/' + file_old.nameCourse + '/' + name
+    if(type(file_old) == NoneType):
+        raise HTTPException(404, 'Course not found')
+    if(name == ""):
+        raise HTTPException(404, 'No new file name')
+    try:
+        rename(file_old.path, uri)
+        conn.execute(files.update().values(name=name, path=uri).where(files.c.id==id))
+        return FileOut(id=file_old.id, name=name, path=uri)
+    except Exception as e:
+        raise HTTPException(404, str(e))
 
 @files_routes.delete('/delete/{id}', tags=['Files'], status_code=204)
 def delete_file(id:str):
