@@ -49,7 +49,6 @@ def get_streaming_file(id:str, range: str = Header(None)):
     file = conn.execute(files.select().where(files.c.id==id)).first()
     course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
     uri = course.path + '/' +file.name
-    print(uri)
     with open(uri, 'rb') as video:
         video.seek(start)
         data = video.read(start + end)
