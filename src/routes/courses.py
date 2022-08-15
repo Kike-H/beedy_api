@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from os import makedirs, path, getcwd
+from sqlalchemy.orm import Session
 from typing import List
 
 from src.models.course import CourseIn, CourseOut
 from src.schemas.courses import courses
-from src.config.database import conn
+from src.config.database import conn, engine
 
 courses_routes = APIRouter()
 
@@ -26,6 +27,17 @@ def addNewCourse(course_in: CourseIn):
 def getCoursesByUser(id:str):
     '''This route  get all the courses of a user'''
     response_courses = conn.execute(courses.select().where(courses.c.idUser==id)).all()
+    if(len(response_courses) == 0):
+        raise HTTPException(404, 'Not Found')
+    return response_courses
+
+@courses_routes.get('/get', response_model=List[CourseOut], tags=['courses'], status_code=200)
+def getCoursesByName(name: str = ""):
+    '''This route  get all the courses by name'''
+    search = "%{}%".format(name)
+    with Session(engine) as s:
+        response_courses = s.query(courses).filter(courses.c.name.like(search)).all()
+        s.close()
     if(len(response_courses) == 0):
         raise HTTPException(404, 'Not Found')
     return response_courses
