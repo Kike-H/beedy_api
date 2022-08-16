@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from src.schemas.users import userRole
 class UserBase(BaseModel):
     '''
@@ -12,7 +12,7 @@ class UserBase(BaseModel):
     '''
     id: Optional[str]
     name: str
-    email: str
+    email: EmailStr
     role: userRole
 
 class UserIn(UserBase):
@@ -35,7 +35,19 @@ class UserOut(BaseModel):
     status_code: int
     message = "New user registered"
 
-class UserLogin(BaseModel):
-    email: str
+class UserLoginIn(BaseModel):
+    email: EmailStr
     password: str
-    token: Optional[str]
+
+class UserLoginToken(BaseModel):
+    id: str
+    role: str
+
+    def asdict(self) -> dict:
+        return {
+            "id":self.id,
+            "role":self.role
+        }
+
+class UserLoginOut(BaseModel):
+    token: str

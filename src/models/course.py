@@ -1,5 +1,4 @@
 from typing import Optional
-from unicodedata import name
 from pydantic import BaseModel
 
 class CourseBase(BaseModel):
@@ -10,7 +9,7 @@ class CourseBase(BaseModel):
 
 class CourseIn(CourseBase):
     ''' This class represents the paramenters of new course '''
-    idUser: str
+    idUser: Optional[str]
 
     def asdict(self) -> dict:
         return {
