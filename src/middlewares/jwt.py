@@ -8,6 +8,8 @@ class VerifyToken(APIRoute):
 
         async def verify_token_middleware(request: Request):
             token = ""
+            if(str(request.url).__contains__('any')):
+                return await original_route(request)
             try:
                 token = request.headers['Authorization'].split(" ")[1]
             except:

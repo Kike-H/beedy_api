@@ -15,8 +15,8 @@ courses_routes = APIRouter(route_class=VerifyToken)
 
 ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
-@courses_routes.post('/add', response_model=CourseOut, tags=['Courses'], status_code=201)
-def add_new_course(course_in: CourseIn, request:Request):
+@courses_routes.post('/add', response_model=CourseOut, tags=['Courses', 'Tutor'], status_code=201)
+def add_new_course(course_in: CourseIn, request:Request, apiKey:str = ''):
     '''This route add a new course'''
     role = request.state.role
     id_user = request.state.id
@@ -33,16 +33,20 @@ def add_new_course(course_in: CourseIn, request:Request):
     else: 
         raise HTTPException(401, 'Not User Authorization')
 
-@courses_routes.get('/get', response_model=List[CourseOut], tags=['Courses'], status_code=200)
-def get_courses_by_user(request: Request):
+@courses_routes.get('/get/mycourses', response_model=List[CourseOut], tags=['Courses', 'Tutor'], status_code=200)
+def get_courses_by_user(request: Request, apiKey:str = ''):
     '''This route  get all the courses of a user'''
-    id_user = request.state.id
-    response_courses = conn.execute(courses.select().where(courses.c.idUser==id_user)).all()
-    if(len(response_courses) == 0):
-        raise HTTPException(404, 'Not Found')
-    return response_courses
+    role = request.state.role
+    if(role == 'tutor'):
+        id_user = request.state.id
+        response_courses = conn.execute(courses.select().where(courses.c.idUser==id_user)).all()
+        if(len(response_courses) == 0):
+            raise HTTPException(404, 'Not Found')
+        return response_courses
+    else:
+        raise HTTPException(401, 'Not Authorization')
 
-@courses_routes.get('/get', response_model=List[CourseOut], tags=['Courses'], status_code=200)
+@courses_routes.get('/get/any/', response_model=List[CourseOut], tags=['Courses', 'AnyOne'], status_code=200)
 def get_courses_by_name(name: str = ""):
     '''This route  get all the courses by name'''
     search = "%{}%".format(name)
@@ -53,7 +57,7 @@ def get_courses_by_name(name: str = ""):
         raise HTTPException(404, 'Not Found')
     return response_courses
 
-@courses_routes.get('/get/last/', response_model=List[CourseOut], tags=['Courses'], status_code=200)
+@courses_routes.get('/get/any/last/', response_model=List[CourseOut], tags=['Courses', 'AnyOne'], status_code=200)
 def get_courses_by_date():
     '''This route  get the last 5 courses'''
     with Session(engine) as s:
@@ -61,13 +65,15 @@ def get_courses_by_date():
         s.close()
     return response_courses
 
-@courses_routes.put('/get/update/', response_model=CourseOut, tags=['Courses'], status_code=200)
-def update_course(request: Request, id:str, name: str = ""):
+@courses_routes.put('/get/update/', response_model=CourseOut, tags=['Courses', 'Tutor'], status_code=200)
+def update_course(request: Request, id:str, name: str = "", apiKey:str = ''):
     '''This route update a course by id'''
     course_old = conn.execute(courses.select().where(courses.c.id==id)).first()
     uri = ROOT_DIR + '/' + course_old.idUser + '/' + name
-    role = request.state.role
-    if(role == 'tutor'):
+    id_user = request.state.id
+    print(id_user)
+    print(course_old.idUser)
+    if(id_user == course_old.idUser):
         if(type(course_old) == NoneType):
             raise HTTPException(404, 'Course not found')
         try:
@@ -79,15 +85,17 @@ def update_course(request: Request, id:str, name: str = ""):
     else :
             raise HTTPException(401, 'Not User Authorization')
 
-@courses_routes.delete('/delete/{id}', tags=['Courses'], status_code=204)
-def delete_course(request: Request, id:str):
+@courses_routes.delete('/delete/{id}', tags=['Courses', 'Tutor'], status_code=204)
+def delete_course(request: Request, id:str, apiKey:str = ''):
     '''This route delete a course by id'''
-    role = request.state.role
-    if(role == 'tutor'):
-        try:
-            course = conn.execute(courses.select().where(courses.c.id==id)).first()
+    id_user = request.state.id
+    try:
+        course = conn.execute(courses.select().where(courses.c.id==id)).first()
+        if(id_user == course.idUser):
             rmdir(course.path)
             conn.execute(courses.delete().where(courses.c.id==id))
             return Response(status_code=HTTP_204_NO_CONTENT)
-        except Exception as e:
-            raise HTTPException(404, str(e))
+        else:
+            raise HTTPException(401, 'Not Authorization')
+    except Exception as e:
+        raise HTTPException(404, str(e))

@@ -18,13 +18,13 @@ ROOT_DIR = path.abspath(path.join(getcwd(), './files/'))
 
 PORTION_SIZE = 1024 * 1024
 
-@files_routes.post('/upload/idcourse/{id_course}', response_model=FileOut, tags=['Files'], status_code=201)
-async def upload_file(request:Request, id_course:str, file_in: UploadFile = File(...)):
+@files_routes.post('/upload/idcourse/{id_course}', response_model=FileOut, tags=['Files', 'Tutor'], status_code=201)
+async def upload_file(request:Request, id_course:str, apiKey:str = '', file_in: UploadFile = File(...)):
     '''This route add a new file to a course'''
     course = conn.execute(courses.select().where(courses.c.id==id_course)).first()
-    role = request.state.role
+    id_user = request.state.id
     uri = course.path + '/' + file_in.filename
-    if(role == 'tutor'):
+    if(id_user == course.idUser):
         try:
             with open (uri, 'wb') as save_file:
                 content = await file_in.read()
@@ -34,9 +34,11 @@ async def upload_file(request:Request, id_course:str, file_in: UploadFile = File
             return FileOut(id=new_id, name=file_in.filename, path=uri)
         except Exception as e:
             raise HTTPException(500, str(e))
+    else: 
+        raise HTTPException(401, 'Not Authorization')
 
-@files_routes.get('/get/course/{id}', response_model=List[FileOut], tags=['Files'], status_code=200)
-def get_file_by_id_course(request:Request, id:str):
+@files_routes.get('/get/course/{id}', response_model=List[FileOut], tags=['Files', 'Student'], status_code=200)
+def get_file_by_id_course(request:Request, id:str, apiKey:str = ''):
     role = request.state.role
     if(role == 'student'):
         '''This route  get all the files of a course'''
@@ -46,7 +48,7 @@ def get_file_by_id_course(request:Request, id:str):
         return response_files
     else : raise HTTPException(401, 'Invalid role')
 
-@files_routes.get('/get/streaming/video/{id}', tags=['Files'], status_code=200)
+@files_routes.get('/get/streaming/video/{id}', tags=['Files', 'Student'], status_code=200)
 def get_streaming_file(request:Request, id:str, apiKey:str = '', range: str = Header(None)):
     role = request.state.role
     if(role == 'student'):
@@ -74,33 +76,41 @@ def get_streaming_file(request:Request, id:str, apiKey:str = '', range: str = He
                 media_type="video/mp4"
             )
 
-@files_routes.put('/get/update/{id}/name', response_model=FileOut, tags=['Files'], status_code=200)
-def update_file(id: str, name:str =""):
+@files_routes.put('/get/update/{id}/name', response_model=FileOut, tags=['Files', 'Tutor'], status_code=200)
+def update_file(request: Request, id: str, name:str ="", apiKey:str = ''):
     '''This route update the video name'''
+    id_user = request.state.id
     file = conn.execute(files.select().where(files.c.id==id)).first()
     course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
-    uri_old = course.path + '/' + file.name
-    uri_new = course.path + '/' + name
-    if(type(file) == NoneType):
-        raise HTTPException(404, 'Course not found')
-    if(name == ""):
-        raise HTTPException(404, 'No new file name')
-    try:
-        rename(uri_old, uri_new)
-        conn.execute(files.update().values(name=name).where(files.c.id==id))
-        return FileOut(id=file.id, name=name)
-    except Exception as e:
-        raise HTTPException(404, str(e))
+    if(id_user == file.idUser):
+        uri_old = course.path + '/' + file.name
+        uri_new = course.path + '/' + name
+        if(type(file) == NoneType):
+            raise HTTPException(404, 'Course not found')
+        if(name == ""):
+            raise HTTPException(404, 'No new file name')
+        try:
+            rename(uri_old, uri_new)
+            conn.execute(files.update().values(name=name).where(files.c.id==id))
+            return FileOut(id=file.id, name=name)
+        except Exception as e:
+            raise HTTPException(404, str(e))
+    else: 
+        raise HTTPException(401, 'Not Authorization')
 
-@files_routes.delete('/delete/{id}', tags=['Files'], status_code=204)
-def delete_file(id:str):
+@files_routes.delete('/delete/{id}', tags=['Files', 'Tutor'], status_code=204)
+def delete_file(request: Request, id:str, apiKey:str = ''):
     '''This route delete a file by id'''
+    id_user = request.state.id
     try:
         file = conn.execute(files.select().where(files.c.id==id)).first()
-        course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
-        uri = course.path + '/' + file.name
-        remove(uri)
-        conn.execute(files.delete().where(files.c.id==id))
-        return Response(status_code=HTTP_204_NO_CONTENT)
+        if(id_user == file.idUser):
+            course = conn.execute(courses.select().where(courses.c.id==file.idCourse)).first()
+            uri = course.path + '/' + file.name
+            remove(uri)
+            conn.execute(files.delete().where(files.c.id==id))
+            return Response(status_code=HTTP_204_NO_CONTENT)
+        else: 
+            raise HTTPException(401, 'Not Authorization')
     except Exception as e:
         raise HTTPException(404, str(e))
