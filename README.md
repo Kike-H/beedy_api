@@ -56,6 +56,7 @@ pip install -r requirements.txt
 USERDB=your-name-user
 PASSWORDDB=your-password
 DATABASE=beedyDB
+SECRETE=your-secrets-key
 ```
 
 7. Create a Database and named __beedyDB__
